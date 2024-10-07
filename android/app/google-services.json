@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1045650082325",
+    "project_id": "twogere-995cc",
+    "storage_bucket": "twogere-995cc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045650082325:android:0de158f7d840467f821c1c",
+        "android_client_info": {
+          "package_name": "com.spheretwogere.twogere"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbZlBP3OjKmnnWPVFlZYvXeN4Az1R9rkM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
