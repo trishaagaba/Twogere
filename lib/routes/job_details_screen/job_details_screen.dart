@@ -1,4 +1,5 @@
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:twongere/util/app_buttons.dart';
 import 'package:twongere/util/app_colors.dart';
@@ -90,7 +91,20 @@ class JobDetailsScreenState extends State<JobDetailsScreen> {
                           Text(job.description, style: AppStyles.normalBlackTxtStyle),
                           const SizedBox(height: 20),
                           const Text("Qualification", style: AppStyles.normalBoldBlackTxtStyle),
-                          // You can add a placeholder for qualification if needed
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: job.descriptions.map<Widget>((qualification) {
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("• ", style: AppStyles.normalBlackTxtStyle),  // Bullet point
+                                  Expanded(
+                                    child: Text(qualification.name, style: AppStyles.normalBlackTxtStyle),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
                           const SizedBox(height: 40),
                           DSolidButton(
                             label: "Apply Now",
@@ -98,8 +112,27 @@ class JobDetailsScreenState extends State<JobDetailsScreen> {
                             bgColor: AppColors.primarColor,
                             borderRadius: 15,
                             textStyle: AppStyles.normalWhiteTxtStyle,
-                            onClick: () {
-                              // Add apply logic
+                            onClick: () async {
+                              _showUploadDialog(context);
+                              // Prompt the user to upload files
+                              // FilePickerResult? result = await FilePicker.platform.pickFiles(
+                              //   allowMultiple: true,
+                              //   type: FileType.custom,
+                              //   allowedExtensions: ['pdf', 'doc', 'docx'], // Application letter, CV, National ID
+                              // );
+                              //
+                              // if (result != null) {
+                              //   List<PlatformFile> files = result.files;
+                              //
+                              //   // Handle the selected files (e.g., upload them to the server)
+                              //   for (var file in files) {
+                              //     print('Picked file: ${file.name}');  // Example action
+                              //   }
+                              //
+                              //   // Add your logic here to handle the uploaded files
+                              // } else {
+                              //   // User canceled the picker
+                              // }
                             },
                           ),
                           const SizedBox(height: 10),
@@ -118,97 +151,91 @@ class JobDetailsScreenState extends State<JobDetailsScreen> {
   }
 }
 
-//
-// class JobDetailsScreen extends StatefulWidget{
-//   const JobDetailsScreen({super.key});
-//
-//
-//   @override
-//   JobDetailsScreenState createState () => JobDetailsScreenState();
-// }
-//
-//
-// class JobDetailsScreenState extends State<JobDetailsScreen>{
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text("Job details",style: AppStyles.titleBlackTxtStyle,),
-//       ),
-//
-//       body: SafeArea(
-//         child: SingleChildScrollView(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Container(
-//                 constraints: const BoxConstraints.expand(height: 250),
-//                 decoration: BoxDecoration(
-//                   color: Colors.grey,
-//                   borderRadius: BorderRadius.circular(15)
-//                 ),
-//                 margin: const EdgeInsets.all(10),
-//               ),
-//               const SizedBox(height: 10,),
-//               Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 20),
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     const Text("Cognosphere dynamics Limited", style: AppStyles.smallBlackTxtStyle,),
-//                     const SizedBox(height: 5,),
-//                     const SizedBox(
-//                       child: Row(
-//                         // mainAxisAlignment: MainAxisAlignment.spaceAround,
-//                         children: [
-//                           SizedBox(
-//                             child: Row(
-//                               children: [
-//                                 Icon(Icons.location_on),
-//                                 SizedBox(width: 5,),
-//                                 Text("Kampala", style: AppStyles.normalBlackTxtStyle,)
-//                               ],
-//                             ),
-//                           ),
-//                           SizedBox(width: 30,),
-//                           SizedBox(
-//                             child: Row(
-//                               children: [
-//                                 Icon(Icons.currency_exchange_sharp),
-//                                 SizedBox(width: 5,),
-//                                 Text("500,000 USH", style: AppStyles.normalBlackTxtStyle,)
-//                               ],
-//                             ),
-//                           )
-//                         ],
-//                       ),
-//                     ),
-//
-//                     const SizedBox(height: 20,),
-//                     const Text("Description", style: AppStyles.normalBoldBlackTxtStyle,),
-//                     const Text(AppConstansts.longTxt, style: AppStyles.normalBlackTxtStyle,),
-//
-//                     const SizedBox(height: 20,),
-//                     const Text("Qualification", style: AppStyles.normalBoldBlackTxtStyle,),
-//                     const Text(AppConstansts.lontxt2, style: AppStyles.normalBlackTxtStyle,),
-//                     const SizedBox(height: 40,),
-//                     DSolidButton(
-//                       label: "Apply Now",
-//                       btnHeight: 45,
-//                       bgColor: AppColors.primarColor,
-//                       borderRadius: 15,
-//                       textStyle: AppStyles.normalWhiteTxtStyle,
-//                       onClick: (){}),
-//                     const SizedBox(height: 10,),
-//
-//                   ],
-//                 ),
-//               )
-//
-//             ],
-//           ),
-//         )),
-//     );
-//   }
-// }
+void _showUploadDialog(BuildContext context) {
+  // Variables to hold file paths
+  String? nationalIdPath;
+  String? applicationLetterPath;
+  String? otherFilePath;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Upload Documents'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Upload National ID'),
+              ElevatedButton(
+                onPressed: () async {
+                  FilePickerResult? result = await FilePicker.platform.pickFiles();
+                  if (result != null) {
+                    nationalIdPath = result.files.single.path;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('National ID uploaded'))
+                    );
+                  }
+                },
+                child: Text('Upload National ID'),
+              ),
+              SizedBox(height: 10),
+              Text('Upload Application Letter'),
+              ElevatedButton(
+                onPressed: () async {
+                  FilePickerResult? result = await FilePicker.platform.pickFiles();
+                  if (result != null) {
+                    applicationLetterPath = result.files.single.path;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Application Letter uploaded'))
+                    );
+                  }
+                },
+                child: Text('Upload Application Letter'),
+              ),
+              SizedBox(height: 10),
+              Text('Upload Other Document'),
+              ElevatedButton(
+                onPressed: () async {
+                  FilePickerResult? result = await FilePicker.platform.pickFiles();
+                  if (result != null) {
+                    otherFilePath = result.files.single.path;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Other document uploaded'))
+                    );
+                  }
+                },
+                child: Text('Upload Other Document'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+          ),
+          ElevatedButton(
+            child: Text('Submit'),
+            onPressed: () {
+              // You can perform the submit action here, such as sending the files to a server.
+              if (nationalIdPath != null && applicationLetterPath != null && otherFilePath != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Documents Submitted'))
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please upload all required documents'))
+                );
+              }
+              Navigator.of(context).pop(); // Close the dialog
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+

@@ -5,16 +5,19 @@ import 'package:twongere/util/app_styles.dart';
 class TextInputWidget extends StatelessWidget{
   final TextEditingController controller;
   final String hintText;
-  final Widget? suffixIcon;
+  final IconButton? suffixIcon;
   final TextInputType? keyboardType;
   final bool isPassword;
+  final EdgeInsets contentPadding;
+
   const TextInputWidget({ 
     required this.controller, 
     required this.hintText,
     required this.isPassword,
     this.suffixIcon,
+    required this.contentPadding,
     this.keyboardType,
-    super.key, required bool isOutlined, required Color outlineColor});
+    super.key, required bool isOutlined, required Color outlineColor, });
 
 
   @override
@@ -27,10 +30,11 @@ class TextInputWidget extends StatelessWidget{
         // border: Border.all(color: AppColors.bgGreyColor, width: 2)
       ),
 
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      // padding: const EdgeInsets.symmetric(horizontal: 10),
       child: TextFormField(
         controller:  controller,
         obscureText: isPassword,
+        keyboardType: keyboardType,
         obscuringCharacter: "*",
         decoration: InputDecoration(
             enabledBorder: UnderlineInputBorder(
@@ -41,7 +45,8 @@ class TextInputWidget extends StatelessWidget{
             ),
          border: InputBorder.none,
          hintText: hintText,
-         hintStyle: AppStyles.normalGreyColorTxtStyle
+         hintStyle: AppStyles.normalGreyColorTxtStyle,
+            suffixIcon: suffixIcon
         ),
       ),
     );
@@ -55,11 +60,13 @@ class PhoneInputWidget extends StatelessWidget{
   final TextEditingController controller;
   final String hintText;
   final bool isPassword;
+  final EdgeInsets? contentPadding;
   final TextInputType? keyboardType;
   const PhoneInputWidget({ 
     required this.controller, 
     required this.hintText,
     this.keyboardType,
+    this.contentPadding,
     required this.isPassword,
     super.key, required bool isOutlined, required Color outlineColor});
 
@@ -73,7 +80,7 @@ class PhoneInputWidget extends StatelessWidget{
         border: Border.all(color: AppColors.bgGreyColor, width: 2)
       ),
 
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      // padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
       child: Row(
         children: [
           TextButton(
@@ -92,8 +99,10 @@ class PhoneInputWidget extends StatelessWidget{
          keyboardType: keyboardType,
         obscuringCharacter: "*",
         decoration: InputDecoration(
-         border: InputBorder.none,
+         // border: InputBorder.none,
          hintText: hintText,
+            // contentPadding: contentPadding ?? const EdgeInsets.symmetric(vertical: 12),
+
          hintStyle: AppStyles.normalGreyColorTxtStyle
         ),
       ))

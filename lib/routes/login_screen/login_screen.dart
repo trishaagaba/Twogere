@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // To store login state
 import 'package:twongere/route.dart';
+import 'package:twongere/routes/login_screen/widgets/forgot_password_screen.dart';
 import 'package:twongere/routes/login_screen/widgets/login_screen_widgets.dart';
 import 'package:twongere/util/app_buttons.dart';
 import 'package:twongere/util/app_colors.dart';
 import 'package:twongere/util/app_styles.dart';
+import '../../main.dart';
 import '../../respository/auth_repository_api.dart';
+// import 'package:awesome_notifications/awesome_notifications.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -113,9 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: AppStyles.normalPrimaryColorTxtStyle),
                       const SizedBox(height: 5),
                       TextInputWidget(
+
                         controller: _emailController,
                         hintText: "yourname@gmail.com",
                         isPassword: false,
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 12),
                         isOutlined: false,
                         outlineColor: AppColors.primarColor,
                         // Single line input with underline
@@ -129,6 +137,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: "Password",
                         isPassword: true,
                         isOutlined: false,
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 12),
                         outlineColor: AppColors
                             .primarColor, // Single line input with underline
                       ),
@@ -154,12 +164,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      // TextButton(
-                      //   onPressed: () {},
-                      //   child: const Text("Forgot Password?",
-                      //       style: AppStyles.normalPrimaryColorTxtStyle),
-                      // ),
-                      const SizedBox(height: 50),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ForgotPasswordDialog(
+                                // Pass the topicId directly
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text("Forgot Password?",
+                            style: AppStyles.normalPrimaryColorTxtStyle),
+                      ),
+                      const SizedBox(height: 40),
                       _isLoading
                           ? Center(
                               child:
@@ -185,9 +204,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                 if (loginResult == 1) {
                                   // Successful login
-                                  await _saveLoginState(); // Save login details if "Remember Me" is checked
+                                  await _saveLoginState();
+                                  // await  _sendWelcomeNotification();
+                                  // Save login details if "Remember Me" is checked
                                   Navigator.pushNamed(
                                       context, RoutesGenerator.homeScreen);
+
+                                  // _updateUserData();
+
                                 } else if (loginResult == 0) {
                                   _showMessageDialog(
                                     context,
@@ -214,9 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     "Could not connect to the server. Please check your internet connection and try again.",
                                   );
                                 }
-                                setState(() {
-                                  _isLoading = false;
-                                });
+
                               },
                             ),
                       Row(
@@ -263,6 +285,39 @@ void _showMessageDialog(BuildContext context, String title, String message) {
         ],
       );
     },
+  );
+}
+
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+
+// Request notification permissions (for iOS)
+
+
+// Send the welcome notification
+Future<void> _sendWelcomeNotification() async {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+  AndroidNotificationDetails(
+    'basic_channel', // Channel ID
+    'Basic Notifications', // Channel name
+    channelDescription: 'This is the description for the basic notifications channel',
+    importance: Importance.max,
+    priority: Priority.high,
+    showWhen: false,
+  );
+
+  const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    android: androidPlatformChannelSpecifics,
+  );
+
+  await flutterLocalNotificationsPlugin.show(
+    10, // Notification ID
+    '🎉 Welcome to Twogere!', // Notification title
+    'Hello and welcome to Twogere! We’re thrilled to have you onboard. 🌟\n\n'
+        'Dive in and start exploring your new community!', // Notification body
+    platformChannelSpecifics,
   );
 }
 

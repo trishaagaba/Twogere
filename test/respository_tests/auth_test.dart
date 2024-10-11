@@ -28,7 +28,7 @@ void main(){
 
       final res = await AuthRepositoryApi().signup(
         name: name, email: email, 
-        phone: phone, password: password, 
+        phone: phone, password: password, organisation_name: '',
         // gender: gender, isDeaf: isDeaf
       );
 

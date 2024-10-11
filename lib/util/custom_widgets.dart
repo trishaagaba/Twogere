@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,9 +27,9 @@ class SideDrawerWidget extends StatefulWidget {
   class SideDrawerWidgetState extends State<SideDrawerWidget> {
   bool isNotificationOn = false;
 
-  String userName = ""; // These would be dynamically set based on user data
-  String email = "";
-  String profilePicUrl = "";
+  String? _username = ""; // These would be dynamically set based on user data
+  String? _email = "";
+  String? _uploadedImage = "";
 
   @override
   void initState() {
@@ -38,28 +40,33 @@ class SideDrawerWidget extends StatefulWidget {
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  final storedName = await storage.read(key: 'name');
-  final storedEmail = await storage.read(key: 'email');
 
-  String? storedProfilePic = prefs.getString('profile_image');
+
+
+    _username  = prefs.getString('name');
+    _email = prefs.getString('email');
+
+    _uploadedImage = prefs.getString('profile_image');
 
   // final storedProfilePic = await storage.read(
   // key: 'profile_image');
 
   setState(() {
-  userName = storedName ?? "John Doe"; // Default value
-  email = storedEmail ?? "johndoe@example.com"; // Default value
-  profilePicUrl = storedProfilePic ??
+  _username = _username ?? "User"; // Default value
+  _email = _email ?? ""; // Default value
+  _uploadedImage = _uploadedImage ??
   "https://via.placeholder.com/150"; // Default value
   });
 
   }
   Future<void> _handleNotificationPermission() async {
+
     var status = await Permission.notification.status;
     if (!status.isGranted) {
       await Permission.notification.request();
     }
   }
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context){
@@ -75,18 +82,18 @@ class SideDrawerWidget extends StatefulWidget {
                 const Text("My Profile", style: AppStyles.titleBlackTxtStyle,),
                 const SizedBox(height: 10,), 
                 CircleAvatar(radius: 50,
-                  backgroundImage: profilePicUrl.isNotEmpty
-                      ? NetworkImage(profilePicUrl)
+                  backgroundImage: _uploadedImage != null
+                      ? FileImage(File(_uploadedImage!))
                       : const AssetImage("assets/placeholder_profile.png")
                   as ImageProvider,),
                 const SizedBox(height: 10,), 
-                Center( child :Text(userName, style: AppStyles.normalBlackTxtStyle,),),
+                Center( child :Text(_username!, style: AppStyles.normalBlackTxtStyle,),),
                 const SizedBox(
                   height: 5,
                 ),
                 Center(
                     child: Text(
-                      email,
+                      _email!,
                       style: AppStyles.normalBlackTxtStyle,
                     )),
                 const SizedBox(
@@ -129,20 +136,58 @@ class SideDrawerWidget extends StatefulWidget {
                   },
                 ),
                 const SizedBox(height: 40,),
+                // Stack(
+                //   alignment: Alignment.center, // Centers the loader on top of the button
+                //   children: [
+                //     DSolidButton(
+                //       label: "Logout",
+                //       btnHeight: 45,
+                //       bgColor: AppColors.primarColor,
+                //       borderRadius: 15,
+                //       onClick: () async {
+                //         setState(() {
+                //           _isLoading = true; // Start loading
+                //         });
+                //
+                //         // Simulate a delay to show loading (remove in production)
+                //         await Future.delayed(Duration(seconds: 2));
+                //
+                //         setState(() {
+                //           _isLoading = false; // Stop loading after async task
+                //         });
+                //       }, textStyle:AppStyles.normalWhiteTxtStyle,
+                //     ),
+                //     // Only show the loader when loading
+                //     if (_isLoading)
+                //       Positioned(
+                //         child: CircularProgressIndicator(
+                //           // backgroundColor: AppColors.whiteColor, // Spinner color
+                //           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primarColor), // Customize color
+                //         ),
+                //       ),
+                //   ],
+                // ),
+
+                _isLoading ? const Center( child : CircularProgressIndicator(), ) :
                 DSolidButton(
-                  label: "Logout", 
+                  label: "Logout",
                               btnHeight: 45,
-                  bgColor: AppColors.primarColor, 
-                  borderRadius: 15, 
+                  bgColor: AppColors.primarColor,
+                  borderRadius: 15,
                   textStyle: AppStyles.normalWhiteTxtStyle,
                     onClick: () async {
-                      // await authRepositoryApi.signOut();
+                      setState(() {
+                        _isLoading = true;
+                      });
                       await authRepositoryApi.clearToken();
 
                       setState(() {
-                        userName = '';
-                        email = '';
-                        profilePicUrl = '';
+                        _username = '';
+                        _email = '';
+                        _uploadedImage = '';
+                      });
+                      setState(() {
+                        _isLoading = false;
                       });
                       Navigator.pushNamed(context, RoutesGenerator.loginScreen);
                     }),
@@ -288,7 +333,7 @@ class _DropdownButtonExampleState extends State<DropdownButtonWidget> {
       elevation: 16,
       style: AppStyles.normalBlackTxtStyle,
       underline: Container(),
-      // isExpanded: true,
+      isExpanded: true,
       onChanged: (String? value) {
         // This is called when the user selects an item.
         setState(() {
@@ -439,7 +484,7 @@ class _cordionWidgetState extends State<Cordionwidget>{
 
 class SingleDropDownWidget extends StatefulWidget{
   final List<String> list;
-  final Function(int)? onChange;
+  final Function(String)? onChange;
   const SingleDropDownWidget({
     required this.list,
     this.onChange,
@@ -508,7 +553,7 @@ class _singleDropDownWidgetState extends State<SingleDropDownWidget>{
                                 _strValue =  widget.list[index];
                                 _isVisible = false;
                                 _index = index;
-                                widget.onChange!=null? widget.onChange!(index):null;
+                                widget.onChange!=null? widget.onChange!(_strValue):null;
                                 });
                               },
                             child: Padding(

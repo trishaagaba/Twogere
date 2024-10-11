@@ -19,7 +19,7 @@ abstract interface class AuthRepositoryBase{
     required String email,
     required String phone,
     required String password,
-    // required String gender,
+    required String organisation_name,
     // required bool isDeaf
   });
 

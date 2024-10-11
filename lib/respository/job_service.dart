@@ -33,6 +33,8 @@ class JobService {
   final int id;
   final String title;
   final String description;
+  final List<Description> descriptions;
+
   final String location;
   final String amount;
   final String jobStatus;
@@ -43,6 +45,8 @@ class JobService {
   required this.id,
   required this.title,
   required this.description,
+    required this.descriptions,
+
   required this.location,
   required this.amount,
   required this.jobStatus,
@@ -57,11 +61,27 @@ class JobService {
   description: json['description'] ?? 'No description available',
   location: json['location'] ?? 'No location specified',
   amount: json['amount'] ?? 'No amount provided',
+    descriptions:(json['descriptions'] as List)
+        .map((desc) => Description.fromJson(desc))
+        .toList(),
   jobStatus: json['job_status'] ?? 'Status unavailable',
   jobNature: json['job_nature'] ?? 'Nature unspecified',
   image: 'https://api.cognospheredynamics.com/storage/${json['image']}',
   );
+  }}
+
+
+class Description {
+  final String name;
+
+  Description({required this.name});
+
+  factory Description.fromJson(Map<String, dynamic> json) {
+    return Description(
+      name: json['name'] ??
+          'No name available', // Provide a default value if 'name' is null
+    );
   }
-  }
+}
 
 

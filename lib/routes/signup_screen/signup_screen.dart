@@ -13,7 +13,8 @@ import 'dart:io';
 class SignUpScreen extends StatefulWidget {
   SignUpScreen({super.key});
 
-  Future<void> _storeUserDataLocally(String name, String email, String phone, String gender, bool isDeaf) async {
+  Future<void> _storeUserDataLocally(String name, String email, String phone,
+      String gender, bool isDeaf) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('name', name);
     await prefs.setString('email', email);
@@ -21,6 +22,7 @@ class SignUpScreen extends StatefulWidget {
     await prefs.setString('gender', gender);
     await prefs.setBool('isDeaf', isDeaf);
   }
+
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
@@ -35,9 +37,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
-  String? _gender;
+  String? _gender = "Female";
   late final TextEditingController _genderController = TextEditingController();
 
   final AuthRepositoryApi authRepositoryApi = AuthRepositoryApi();
@@ -58,7 +61,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _pickImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.image);
     if (result != null) {
       setState(() {
         _uploadedImage = result.files.first.path;
@@ -72,221 +76,292 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        automaticallyImplyLeading: true,
-        title: Text(
-          "Let's get you started!",
-          style: TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
-            color: AppStyles.normalPrimaryColorTxtStyle.color,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          centerTitle: true,
+          automaticallyImplyLeading: true,
+          title: Text(
+            "Let's get you started!",
+            style: TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+              color: AppStyles.normalPrimaryColorTxtStyle.color,
+            ),
           ),
+          elevation: 0,
+          shadowColor: Colors.transparent,
         ),
-      ),
-      body: SafeArea(
-        child:Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Form(
-                key: _formKey,
-                child: Expanded(
-                child : SingleChildScrollView(
-
-                 padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                      // Profile picture picker
-                          child: Column(
+        body: SafeArea(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Form(
+              key: _formKey,
+              child: Expanded(
+                  child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: _pickImage,
+                        // Call function to pick the image
+                        child: Stack(
                           children: [
-                            _uploadedImage != null
-                            ? CircleAvatar(
-                            radius: 50,
-                              // backgroundColor: Colors.grey,
-                            backgroundImage: FileImage(File(_uploadedImage!)),
-                          )
-                              : const CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, size: 50, color: Colors.white),
+                            Container(
+                              width : 100,
+                              height : 100,
+                              // radius: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(10), // Optional: round the corners
+                                image: _uploadedImage != null
+                                    ? DecorationImage(
+                                  image: FileImage(File(_uploadedImage!)),
+                                  fit: BoxFit.cover,
+                                )
+                                    : null,
+                              ),
+                              child: _uploadedImage == null
+                                  ? Icon(Icons.person,
+                                      size: 50, color: Colors.white)
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: AppColors.primarColor,
+                                child: Icon(Icons.camera_alt,
+                                    size: 20, color: Colors.white),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        TextButton(
-                          onPressed: _pickImage,
-                          child: const Text("Upload Profile Picture", style: AppStyles.normalPrimaryColorTxtStyle),
-                        ),
-                        ],
                       ),
                     ),
-                      const SizedBox(height: 20),
-
-                      const Text("Full Name", style: AppStyles.normalPrimaryColorTxtStyle),
-                      const SizedBox(height: 5),
-                      TextInputWidget(
-                        controller: _nameController,
-                        hintText: "Full Name",
-                        keyboardType: TextInputType.name,
-                        isPassword: false,
-                        isOutlined: false, // Render as underline only
-                        outlineColor: AppColors.primarColor,
-
-                      ),
-                      const SizedBox(height: 20),
-
-                      const Text("Email Address", style: AppStyles.normalPrimaryColorTxtStyle),
-                      const SizedBox(height: 5),
-                      TextInputWidget(
-                        controller: _emailController,
-                        hintText: "yourname@gmail.com",
-                        keyboardType: TextInputType.emailAddress,
-                        isPassword: false,
-                        isOutlined: false, // Render as underline only
-                        outlineColor: AppColors.primarColor,
-                      ),
-                      const SizedBox(height: 20),
-
-                      const Text("Phone Number", style: AppStyles.normalPrimaryColorTxtStyle),
-                      const SizedBox(height: 5),
-                      PhoneInputWidget(
-                        controller: _phoneController,
-                        hintText: "Enter your phone number",
-                        keyboardType: TextInputType.phone,
-                        isPassword: false,
-                        isOutlined: false, // Render as underline only
-                        outlineColor: AppColors.primarColor,
-                      ),
-                      const SizedBox(height: 20),
-
-                      const Text("Gender", style: AppStyles.normalPrimaryColorTxtStyle),
-                      const SizedBox(height: 5),
-                      DropdownButtonFormField<String>(
-                        value: _gender,
-                        items: [
-                          DropdownMenuItem(value:"Female", child: Text("Female")),
-                          DropdownMenuItem(value: "Male", child: Text("Male")),
-                        ],
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _gender = newValue!;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primarColor),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      const Text("Do you have any impairements?", style: AppStyles.normalPrimaryColorTxtStyle),
-                      const SizedBox(height: 5),
-                      DropdownButtonFormField<bool>(
-                        value: _isDeaf,
-                        items: [
-                          DropdownMenuItem(value: true, child: Text("Yes, I am deaf.")),
-                          DropdownMenuItem(value: false, child: Text("No, i do not have")),
-                        ],
-                        onChanged: (bool? newValue) {
-                          setState(() {
-                            _isDeaf = newValue!;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primarColor),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      const Text("Password", style: AppStyles.normalPrimaryColorTxtStyle),
-                      const SizedBox(height: 5),
-                      TextInputWidget(
-                        controller: _passwordController,
-                        hintText: "Please enter your password",
-                        isPassword: !_isPasswordVisible, // Toggle between obscured and visible text
-                        keyboardType: TextInputType.visiblePassword,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    const SizedBox(height: 20),
+                    const Text("Full Name",
+                        style: AppStyles.normalPrimaryColorTxtStyle),
+                    const SizedBox(height: 5),
+                    TextInputWidget(
+                      controller: _nameController,
+                      hintText: "Full Name",
+                      keyboardType: TextInputType.name,
+                      isPassword: false,
+                      isOutlined: false,
+                      // Render as underline only
+                      outlineColor: AppColors.primarColor,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text("Email Address",
+                        style: AppStyles.normalPrimaryColorTxtStyle),
+                    const SizedBox(height: 5),
+                    TextInputWidget(
+                      controller: _emailController,
+                      hintText: "yourname@gmail.com",
+                      keyboardType: TextInputType.emailAddress,
+                      isPassword: false,
+                      isOutlined: false,
+                      // Render as underline only
+                      outlineColor: AppColors.primarColor,
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text("Phone Number",
+                        style: AppStyles.normalPrimaryColorTxtStyle),
+                    const SizedBox(height: 5),
+                    PhoneInputWidget(
+                      controller: _phoneController,
+                      hintText: "Enter your phone number",
+                      keyboardType: TextInputType.phone,
+                      isPassword: false,
+                      isOutlined: true,
+                      // Render as underline only
+                      outlineColor: AppColors.primarColor,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text("Gender",
+                        style: AppStyles.normalPrimaryColorTxtStyle),
+                    const SizedBox(height: 5),
+                    DropdownButtonFormField<String>(
+                      value: _gender,
+                      items: [
+                        DropdownMenuItem(value: "Female", child: Text("Female")),
+                        DropdownMenuItem(value: "Male", child: Text("Male")),
+                      ],
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _gender = newValue!;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        // labelText: '', // Keep the label visible
+                        labelStyle: TextStyle(color: AppColors.primarColor), // Label styling
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
                             color: AppColors.primarColor,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible; // Toggle visibility
-                            });
-                          },
                         ),
-                        isOutlined: false, // Render as underline only
-                        outlineColor: AppColors.primarColor,
-                      ),
-                      const SizedBox(height: 20),
-
-                      const Text("Confirm Password", style: AppStyles.normalPrimaryColorTxtStyle),
-                      const SizedBox(height: 5),
-                      TextInputWidget(
-                        controller: _confirmPasswordController,
-                        hintText: "Confirm your password",
-                        isPassword: !_isPasswordVisible, // Toggle between obscured and visible text
-                        keyboardType: TextInputType.visiblePassword,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
                             color: AppColors.primarColor,
+                            width: 2.0,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible; // Toggle visibility
-                            });
-                          },
                         ),
-                        isOutlined: false, // Render as underline only
-                        outlineColor: AppColors.primarColor,
+                        contentPadding: EdgeInsets.symmetric(vertical: 12),
                       ),
-                      const SizedBox(height: 20),
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        color: Colors.black,
+                      ),
+                      icon: Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.primarColor,
+                      ),
+                      dropdownColor: Colors.white, // Clean dropdown background
+                    ),
 
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: _hasConsented,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                _hasConsented = value ?? false;
-                              });
-                            },
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Do you have any impairments?",
+                      style: AppStyles.normalPrimaryColorTxtStyle, // Text style
+                    ),
+                    const SizedBox(height: 5),
+                    DropdownButtonFormField<bool>(
+                      value: _isDeaf,
+                      items: [
+                        DropdownMenuItem(value: true, child: Text("Yes, I am deaf.")),
+                        DropdownMenuItem(value: false, child: Text("No, I do not have.")),
+                      ],
+                      onChanged: (bool? newValue) {
+                        setState(() {
+                          _isDeaf = newValue!;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.primarColor, // Custom border color
                           ),
-                    Expanded(
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'I agree to the ',
-                                    style: TextStyle(
-                                        color: Colors
-                                            .black),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                          context:
-                                          context,
-                                          builder:
-                                              (BuildContext
-                                          context) {
-                                            return Container(
-                                              width: MediaQuery.of(context).size.width * 0.9,
-                                              child: AlertDialog(
-                                                  title: Text(
-                                                      "Terms and Conditions"),
-                                                  content:
-                                                  SingleChildScrollView(
-                                                      child: Text(
-                                                        '''Welcome to Twogere!
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.primarColor, // Thicker border when focused
+                            width: 2.0,
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 10, // Consistent vertical padding
+                          horizontal: 12, // Horizontal padding to align text
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        color: Colors.black, // Text color
+                      ),
+                      icon: Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.primarColor, // Icon color matching the theme
+                      ),
+                      dropdownColor: Colors.white, // Background color for dropdown items
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Text("Password",
+                        style: AppStyles.normalPrimaryColorTxtStyle),
+                    const SizedBox(height: 5),
+                    TextInputWidget(
+                      controller: _passwordController,
+                      hintText: "Please enter your password",
+                      isPassword: !_isPasswordVisible,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+
+                      // Toggle between obscured and visible text
+                      keyboardType: TextInputType.visiblePassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: AppColors.primarColor,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible =
+                                !_isPasswordVisible; // Toggle visibility
+                          });
+                        },
+                      ),
+                      isOutlined: false,
+                      // Render as underline only
+                      outlineColor: AppColors.primarColor,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text("Confirm Password",
+                        style: AppStyles.normalPrimaryColorTxtStyle),
+                    const SizedBox(height: 5),
+                    TextInputWidget(
+                      controller: _confirmPasswordController,
+                      hintText: "Confirm your password",
+                      isPassword: !_isPasswordVisible,
+                      // Toggle between obscured and visible text
+                      keyboardType: TextInputType.visiblePassword,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: AppColors.primarColor,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible =
+                                !_isPasswordVisible; // Toggle visibility
+                          });
+                        },
+                      ),
+                      isOutlined: false,
+                      // Render as underline only
+                      outlineColor: AppColors.primarColor,
+                    ),
+                    const SizedBox(height: 20),
+                    Row(children: [
+                      Checkbox(
+                        value: _hasConsented,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _hasConsented = value ?? false;
+                          });
+                        },
+                      ),
+                      Expanded(
+                          child: Row(children: [
+                        Text(
+                          'I agree to the ',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.99,
+                                  child: AlertDialog(
+                                    title: Text("Terms and Conditions"),
+                                    content: SingleChildScrollView(
+                                        child: Text(
+                                      '''Welcome to Twogere!
                                                               
                                                               These Terms and Conditions ("Terms", "Agreement") govern your use of the Twogere mobile application ("App") and the services provided through it. By accessing or using the App, you agree to be bound by these Terms. If you do not agree to any part of the Terms, you may not use the App.
                                                               
@@ -324,198 +399,204 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                               Twogere may update these Terms at any time. Significant changes will be communicated via the App or email. Continued use of the App after changes signifies acceptance of the updated Terms.
                                                               
                                                               12. Governing Law
-                                                              These Terms are governed by the laws of [Your Country].
+                                                              These Terms are governed by the laws of Uganda.
                                                               
                                                               13. Contact Us
                                                               If you have any questions about these Terms, please contact us.''',
-                                                        style:
-                                                        TextStyle(
-                                                          fontSize:
-                                                          14,
-                                                          fontFamily:
-                                                          'Plus Jakarta Sans',
-                                                          color:
-                                                          Colors.black,
-                                                          // Adjust the text style as needed
-                                                        ),
-                                                      )),
-                                                                                  actions: [
-                                                                                    Row(
-                                                                                      children: [
-                                                                                        Checkbox(
-                                              value: _hasConsented,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  _hasConsented = value ?? false;
-                                                });
-                                              },
-                                                                                        ),
-                                                                                        Text('I agree'),
-                                                                                      ],
-                                                                                    ),
-                                                                                    TextButton(
-                                                                                      onPressed: () {
-                                                                                        setState(() {
-                                              _hasConsented = true;
-                                                                                        });
-                                                                                        Navigator.of(context).pop();
-                                                                                      },
-                                                                                      child: Text("Back"),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                            );
-                                },
-                              );
-                            },
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontFamily: 'Plus Jakarta Sans',
+                                        color: Colors.black,
+                                        // Adjust the text style as needed
+                                      ),
+                                    )),
+                                    actions: [
+                                      Row(
+                                        children: [
+                                          Checkbox(
+                                            value: _hasConsented,
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                _hasConsented = value ?? false;
+                                              });
+                                            },
+                                          ),
+                                          Text('I agree'),
+                                        ],
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _hasConsented = true;
+                                          });
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("Back"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Text(
+                            "Terms and Conditions",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        )
+                      ])),
+                    ]),
+                    const SizedBox(height: 20),
+                    _isLoading
+                        ? Center(
                             child:
-                            Text("Terms and Conditions",
-                              style: TextStyle(
-                                      color:
-                                      Colors.blue,
-                                      decoration:
-                                      TextDecoration
-                                          .underline, ),),
-                                    )])),]),
-                      const SizedBox(height: 20),
-                      _isLoading
-                          ? Center(child: const CircularProgressIndicator() ) // Show loader when logging in
-                          :
-                      CorneredButton(
-                        label: "Sign Up",
-                        bgColor: AppColors.primarColor,
-                        txtColor: AppColors.whiteColor,
-                        onClick: () async {
-                          setState(() {
-                            _isLoading = true;
-                          });
+                                const CircularProgressIndicator()) // Show loader when logging in
+                        : CorneredButton(
+                            label: "Sign Up",
+                            bgColor: AppColors.primarColor,
+                            txtColor: AppColors.whiteColor,
+                            onClick: () async {
+                              setState(() {
+                                _isLoading = true;
+                              });
 
-                          final storage = FlutterSecureStorage();
+                              final storage = FlutterSecureStorage();
 
-                          Future<void> _storeUserDataLocally(String name, String email, String phone, String gender, bool isDeaf) async {
-                            SharedPreferences prefs = await SharedPreferences.getInstance();
-                            await prefs.setString('name', name);
-                            await prefs.setString('email', email);
-                            await prefs.setString('phone', phone);
-                            await prefs.setString('gender', gender);
-                            await prefs.setBool('isDeaf', isDeaf);
+                              Future<void> _storeUserDataLocally(
+                                  String name,
+                                  String email,
+                                  String phone,
+                                  String gender,
+                                  bool isDeaf) async {
+                                SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
+                                await prefs.setString('name', name);
+                                await prefs.setString('email', email);
+                                await prefs.setString('phone', phone);
+                                await prefs.setString('gender', gender);
+                                await prefs.setBool('isDeaf', isDeaf);
 
-                            String? imagePath = _uploadedImage;
-                            if (imagePath != null) {
-                              await prefs.setString('profile_image', imagePath);
-                            }
+                                String? imagePath = _uploadedImage;
+                                if (imagePath != null) {
+                                  await prefs.setString(
+                                      'profile_image', imagePath);
+                                }
 
-                            // if (_uploadedImage != null) {
-                            //   await storage.write(key: 'profile_image', value: _uploadedImage);
-                            // }
-                          }
-                          setState(() {
-                            _isLoading = false;
-                          });
+                              }
 
-                          if (!_hasConsented) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Please agree to the Terms and Conditions."),
-                              ),
-                            );
-                            return;
-                          }
+                              if (!_hasConsented) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        "Please agree to the Terms and Conditions."),
+                                  ),
+                                );
+                                return;
+                              }
 
-                          // Validate that all fields are filled
-                          if (_nameController.text.isEmpty ||
-                              _emailController.text.isEmpty ||
-                              _phoneController.text.isEmpty ||
-                              _passwordController.text.isEmpty ||
-                              _confirmPasswordController.text.isEmpty
-                          // ||
-                              // _genderController.text.isEmpty
-                          )
-                          {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Please fill in all fields."),
-                              ),
-                            );
-                            return;
-                          }
+                              // Validate that all fields are filled
+                              if (_nameController.text.isEmpty ||
+                                      _emailController.text.isEmpty ||
+                                      _phoneController.text.isEmpty ||
+                                      _passwordController.text.isEmpty ||
+                                      _confirmPasswordController.text.isEmpty
+                                  // ||
+                                  // _genderController.text.isEmpty
+                                  ) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Please fill in all fields."),
+                                  ),
+                                );
+                                return;
+                              }
 
-                          // Check if passwords match
-                          if (_passwordController.text != _confirmPasswordController.text) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Passwords do not match."),
-                              ),
-                            );
-                            return;
-                          }
+                              // Check if passwords match
+                              if (_passwordController.text !=
+                                  _confirmPasswordController.text) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Passwords do not match."),
+                                  ),
+                                );
+                                return;
+                              }
 
-                          // Sign up process
-                          String email = _emailController.text;
-                          String password = _passwordController.text;
-                          String name = _nameController.text;
-                          String phone = _phoneController.text;
-                          String gender = _genderController.text;
-                          bool isDeaf = _isDeaf;
+                              setState(() {
+                                _isLoading = false;
+                              });
+                              // Sign up process
+                              String email = _emailController.text;
+                              String password = _passwordController.text;
+                              String name = _nameController.text;
+                              String phone = _phoneController.text;
+                              String gender = _genderController.text;
+                              bool isDeaf = _isDeaf;
 
-                          String? imagePath = _uploadedImage;
+                              String? imagePath = _uploadedImage;
 
-                          // Call the signup method and handle the response
-                          int result = await authRepositoryApi.signup(
-                            name: name,
-                            email: email,
-                            phone: phone,
-                            password: password,
-                            // gender: gender,
-                            // isDeaf: isDeaf,
-                          );
+                              // Call the signup method and handle the response
+                              int result = await authRepositoryApi.signup(
+                                name: name,
+                                email: email,
+                                phone: phone,
+                                password: password,
+                                organisation_name: "default"
+                                // isDeaf: isDeaf,
+                              );
 
-                          if (result == 1) {
-                            await _storeUserDataLocally(name, email, phone, gender, isDeaf);
 
-                            // User signed up successfully, inform them about verification
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Signup successful."),
-                              ),
-                            );
-                            // Navigate to the OTP verification screen or home screen
-                            Navigator.pushNamed(context, RoutesGenerator.homeScreen);
-                          } else {
-                            // Handle different error responses
-                            String errorMessage;
+                              if (result == 1) {
+                                await _storeUserDataLocally(
+                                    name, email, phone, gender, isDeaf);
 
-                            switch (result) {
-                              case -1:
-                                errorMessage = "Account with email already exists.";
-                                break;
-                              case 0:
-                                errorMessage = "Signup failed. Please try again.";
-                                break;
-                              // case -3:
-                              //   errorMessage = "Network error. Please check your connection.";
-                                break;
-                              default:
-                                errorMessage = "An unexpected error occurred.";
-                            }
+                                // User signed up successfully, inform them about verification
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Signup successful."),
+                                  ),
+                                );
+                                // Navigate to the OTP verification screen or home screen
+                                Navigator.pushNamed(
+                                    context, RoutesGenerator.homeScreen);
+                              } else {
+                                // Handle different error responses
+                                String errorMessage;
 
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(errorMessage),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                    )
-                    ),
-              )
-                              ]),
-                            )
-    );
+                                switch (result) {
+                                  case -1:
+                                    errorMessage =
+                                        "Account with email already exists.";
+                                    break;
+                                  case 0:
+                                    errorMessage =
+                                        "Signup failed. Please try again.";
+                                    break;
+                                    // case -3:
+                                    //   errorMessage = "Network error. Please check your connection.";
+                                    break;
+                                  default:
+                                    errorMessage =
+                                        "An unexpected error occurred.";
+                                }
 
-     }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(errorMessage),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              )),
+            )
+          ]),
+        ));
+  }
 }
